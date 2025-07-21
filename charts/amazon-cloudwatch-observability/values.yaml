@@ -7,9 +7,9 @@ replicaCount: 1
 ##
 nameOverride: ""
 ## Provide the ClusterName (this is a required parameter)
-clusterName:
+clusterName: basic-cluster
 ## Provide the Region (this is a required parameter)
-region:
+region: us-east-1
 k8sMode: EKS # can be EKS | ROSA | K8S
 ## Provide default tolerations
 tolerations:
@@ -27,7 +27,7 @@ containerLogs:
         cn-northwest-1: 128054284489.dkr.ecr.cn-northwest-1.amazonaws.com.cn
         us-gov-east-1: 161423150738.dkr.ecr.us-gov-east-1.amazonaws.com
         us-gov-west-1: 161423150738.dkr.ecr.us-gov-west-1.amazonaws.com
-    securityContext: {}
+    securityContext: { }
     resources:
       limits:
         cpu: 500m
@@ -1246,9 +1246,9 @@ agent:
   replicas: 1 # The total number non-terminated pods targeted by this AmazonCloudWatchAgent's deployment or statefulSet.
   image:
     repository: cloudwatch-agent
-    tag: 1.300057.0b1161
+    tag: latest
     repositoryDomainMap:
-      public: public.ecr.aws/cloudwatch-agent
+      public: 326055864768.dkr.ecr.us-east-1.amazonaws.com
       cn-north-1: 934860584483.dkr.ecr.cn-north-1.amazonaws.com.cn
       cn-northwest-1: 934860584483.dkr.ecr.cn-northwest-1.amazonaws.com.cn
       us-gov-east-1: 743662458514.dkr.ecr.us-gov-east-1.amazonaws.com
@@ -1300,6 +1300,11 @@ agent:
     issuerAnnotations: {}
   serviceAccount:
     name: # override agent service account name
+  securityContext:
+    privileged: true
+    capabilities:
+      add:
+        - SYS_ADMIN
   config: # optional config that can be provided to override the defaultConfig
   otelConfig: # optional YAML config that can be provided to combine with the config/defaultConfig
   defaultConfig:
@@ -1307,7 +1312,16 @@ agent:
       "logs": {
         "metrics_collected": {
           "kubernetes": {
-            "enhanced_container_insights": true
+            "enhanced_container_insights": true,
+            "accelerated_compute_metrics": true,
+            "kubeflow_metrics": true
+          },
+          "diskio": {
+            "measurement": "*",
+            "resources": [
+              "*"
+            ],
+            "drop_original_metrics": false
           },
           "application_signals": { }
         }
